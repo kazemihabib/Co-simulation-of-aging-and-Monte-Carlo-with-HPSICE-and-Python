@@ -1,5 +1,7 @@
 import sys
+import random
 import regexParser
+import utils
 
 distribution_map = {}
 
@@ -52,24 +54,48 @@ def initial_spice_parse(file_name):
 
     return (file_line_by_line_with_no_monte, distribution_map, monte_data)
 
-def fill_distribution(line):
-    pass
-    
-def parse_spice(spice_file):
-    # file_data_line_by_line = initial_spice_parse(spice_file)
-    # for line_index, line in enumerate(file_data_line_by_line):
-    #     if '#' in line:
-    #         print(line, line_index)
-    print("HELLO")
+def calculate_distribution(line, index, distribution_map):
+    # Fix this and calculate the variables based on distribution_map
+    new_line = ""
+    size = regexParser.parse_tran_size(line[2])
+    size[0] = str(int(size[0]) + random.uniform(0, 1))
+    line[2] = ''.join(size)
+
+    line[3] = ''
+
+    size = regexParser.parse_tran_size(line[6])
+    size[0] = str(int(size[0]) + random.uniform(0, 1))
+    line[6] = ''.join(size)
+
+    line[7] = ''        
+    new_line = ''.join(line)
+    return new_line
+        
+def parse_spice(file_lines, index, distribution_map):
+    new_file_lines = []
+    for line in file_lines:
+        sizing_monte = regexParser.parse_sizing_monte(line)
+        if sizing_monte:
+            line = calculate_distribution(sizing_monte, index, distribution_map)
+
+        new_file_lines.append(line)
+    return new_file_lines 
 
 def generate_process_variation(spice_file):
     result = initial_spice_parse(spice_file)
-    print(result[0])
-    print(result[1])
-    print(result[2])
-    monte_runs = int(result[2][2])
+    lines = result[0]
+    distribution_map = result[1]
+    if distribution_map == {}:
+        return (False, "Distribution not found")
+    monte = result[2]
+    if monte == None:
+        return (False, ".tran XXX XXX sweep monte=XXX didn't found")
+    monte_runs = int(monte[2])
     for i in range(monte_runs):
-        parse_spice(spice_file)
+        a = parse_spice(lines, i, distribution_map)
+        print('\n'.join(a))
+
+    return (True, "")
     
 def main():
     args = handle_args() 
@@ -77,13 +103,12 @@ def main():
         print(args[1])
         return
     arg_options = args[1]
-    
-    # result = import_scripts(arg_options[__SCRIPT_FILE])
-    # print(result[1])
-    # if result[0] == False:
-    #     return
-    
-    generate_process_variation(arg_options[__SPICE_FILE])
+    path = utils.get_path_of_input_file(arg_options[__SPICE_FILE])
+    print(path)
+    generated = generate_process_variation(arg_options[__SPICE_FILE])
+    if generated[0] == False:
+        print(generated[1])
+
 
 if __name__ == "__main__":
     main()
