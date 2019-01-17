@@ -1,26 +1,10 @@
 import sys
+import regexParser
 
-scripts = None
-dist_map = None
-runs = None
+distribution_map = {}
+
 __SPICE_FILE = "spice_file"
 __SCRIPT_FILE = "script_file"
-
-def parse_file():
-    print("HELLO")
-
-def import_scripts(scripts_file):
-    global scripts, dist_map, runs
-    scripts = __import__(scripts_file)
-    try:
-        distribution_map = getattr(scripts, "distibution_map")
-        runs = getattr(scripts, "runs")
-    except: 
-        return (False, "No distribution dictionary defined")
-    else:
-        print(distribution_map)
-    
-    return (True, 'Parsed the module "{0}" succesfully'.format(scripts_file), )
 
 def handle_args():
     args = sys.argv
@@ -48,22 +32,43 @@ def handle_args():
 
     return (True, arg_dict)
 
-def read_file(file_name):
+def initial_spice_parse(file_name):
+    distribution_map = {}
     f = open(file_name)
-    file_data = f.read()
-    file_data_line_by_line = file_data.split('\n')
-    return file_data_line_by_line
+    file_data_line_by_line = f.read().split('\n')
+
+    file_line_by_line_with_no_monte = []
+    monte_data = None
+    for line in file_data_line_by_line:
+        gaussian = regexParser.parse_guassian_distribution(line)
+        monte = regexParser.parse_monte(line)
+
+        if gaussian:
+            distribution_map[gaussian[0]] = gaussian[1:]
+        if monte:
+            monte_data = monte
+        else:
+            file_line_by_line_with_no_monte.append(line)
+
+    return (file_line_by_line_with_no_monte, distribution_map, monte_data)
 
 def fill_distribution(line):
+    pass
     
 def parse_spice(spice_file):
-    file_data_line_by_line = read_file(spice_file)
-    for line_index, line in enumerate(file_data_line_by_line):
-        if '#' in line:
-            print(line, line_index)
+    # file_data_line_by_line = initial_spice_parse(spice_file)
+    # for line_index, line in enumerate(file_data_line_by_line):
+    #     if '#' in line:
+    #         print(line, line_index)
+    print("HELLO")
 
-def generate_process_variation(spice_file, runs):
-    for i in range(runs):
+def generate_process_variation(spice_file):
+    result = initial_spice_parse(spice_file)
+    print(result[0])
+    print(result[1])
+    print(result[2])
+    monte_runs = int(result[2][2])
+    for i in range(monte_runs):
         parse_spice(spice_file)
     
 def main():
@@ -73,12 +78,12 @@ def main():
         return
     arg_options = args[1]
     
-    result = import_scripts(arg_options[__SCRIPT_FILE])
-    print(result[1])
-    if result[0] == False:
-        return
+    # result = import_scripts(arg_options[__SCRIPT_FILE])
+    # print(result[1])
+    # if result[0] == False:
+    #     return
     
-    generate_process_variation(arg_options[__SPICE_FILE], runs)
+    generate_process_variation(arg_options[__SPICE_FILE])
 
 if __name__ == "__main__":
     main()

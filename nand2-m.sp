@@ -5,16 +5,16 @@
 .global vdd
 VDD VDD 0 DC 0.9V
 
-*.param c=GAUSS(1,0.20,1)
-*.param d=GAUSS(1,0.20,1)
+.param c=GAUSS(1,0.20,1)
+.param d=GAUSS(1,0.20,1)
 
 .option  measform = 3
 vin ina 0 pulse 0 0.9 2ns 5ps 5ps 1.5n 3n 
 
 vin1 inb 0 pulse 0 0.9 1ns 5ps 5ps 1.5n 3n
 
-M1 	ss ina 0 0  nmos L=32n*#c W=64n*#d
-M2  OUT inb ss 0 nmos L=32n*#c W=64n*#d
+M1 	ss ina 0 0  nmos L=32n*c W=64n*d
+M2  OUT inb ss 0 nmos L=32n*c W=64n*d
 M3  OUT INa vdd vdd pmos L=32n*c W=64n*d
 M4  OUT INb vdd vdd pmos L=32n*c W=64n*d
 
