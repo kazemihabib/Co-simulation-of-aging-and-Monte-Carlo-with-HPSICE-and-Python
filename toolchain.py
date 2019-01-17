@@ -47,7 +47,7 @@ def initial_spice_parse(file_name):
 
         if gaussian:
             distribution_map[gaussian[0]] = gaussian[1:]
-        if monte:
+        elif monte:
             monte_data = monte
         else:
             file_line_by_line_with_no_monte.append(line)
@@ -77,11 +77,12 @@ def parse_spice(file_lines, index, distribution_map):
         sizing_monte = regexParser.parse_sizing_monte(line)
         if sizing_monte:
             line = calculate_distribution(sizing_monte, index, distribution_map)
+            print(line)
 
         new_file_lines.append(line)
     return new_file_lines 
 
-def generate_process_variation(spice_file):
+def generate_process_variation(spice_file, path):
     result = initial_spice_parse(spice_file)
     lines = result[0]
     distribution_map = result[1]
@@ -92,8 +93,8 @@ def generate_process_variation(spice_file):
         return (False, ".tran XXX XXX sweep monte=XXX didn't found")
     monte_runs = int(monte[2])
     for i in range(monte_runs):
-        a = parse_spice(lines, i, distribution_map)
-        print('\n'.join(a))
+        new_lines = parse_spice(lines, i, distribution_map)
+        utils.write_to_file(spice_file, i, path, new_lines)
 
     return (True, "")
     
@@ -103,9 +104,9 @@ def main():
         print(args[1])
         return
     arg_options = args[1]
-    path = utils.get_path_of_input_file(arg_options[__SPICE_FILE])
+    path = utils.get_path_to_generate_temp_data(arg_options[__SPICE_FILE])
     print(path)
-    generated = generate_process_variation(arg_options[__SPICE_FILE])
+    generated = generate_process_variation(arg_options[__SPICE_FILE], path)
     if generated[0] == False:
         print(generated[1])
 

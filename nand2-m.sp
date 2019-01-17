@@ -27,10 +27,10 @@ M4  OUT INb vdd vdd pmos L=32n*c W=64n*d
 .measure  tran  DELAY_rise_a  trig  V(ina)  val='vdd_me/2'  fall=1  targ V(out) val='vdd_me/2'  rise=2
 .measure  tran  DELAY_rise_b  trig  V(inb)  val='vdd_me/2'  fall=1  targ V(out) val='vdd_me/2'  rise=1
 
-*.mosra reltotaltime='3*365*24*60*60'
+.mosra reltotaltime='3*365*24*60*60'
 
-*.model NC mosra level=1 tit0=5e-7 tit7td=7.5e-10 tittd=1.45e-20 tn=0.23 tk=0.23 totde=1 +relmode=2 HciThreshold=0 SimMode=1
-*.appendmodel NC mosra nmos nmos
-*.appendmodel NC mosra pmos pmos
+.model NC mosra level=1 tit0=5e-7 tit7td=7.5e-10 tittd=1.45e-20 tn=0.23 tk=0.23 totde=1 +relmode=2 HciThreshold=0 SimMode=1
+.appendmodel NC mosra nmos nmos
+.appendmodel NC mosra pmos pmos
 
 .end
