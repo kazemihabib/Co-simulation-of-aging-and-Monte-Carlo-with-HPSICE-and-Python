@@ -44,7 +44,10 @@ def initial_spice_parse(file_name):
     for line in file_data_line_by_line:
         gaussian = regexParser.parse_guassian_distribution(line)
         monte = regexParser.parse_monte(line)
+        include = regexParser.parse_include(line)
 
+        if include:
+            line = include[0] + include[1] + "../../" + include[2] 
         if gaussian:
             distribution_map[gaussian[0]] = gaussian[1:]
         elif monte:
