@@ -80,7 +80,6 @@ def parse_spice(file_lines, index, distribution_map):
         sizing_monte = regexParser.parse_sizing_monte(line)
         if sizing_monte:
             line = calculate_distribution(sizing_monte, index, distribution_map)
-            print(line)
 
         new_file_lines.append(line)
     return new_file_lines 
@@ -90,16 +89,17 @@ def generate_process_variation(spice_file, path):
     lines = result[0]
     distribution_map = result[1]
     if distribution_map == {}:
-        return (False, "Distribution not found")
+        return (False, "Distribution not found", None)
     monte = result[2]
     if monte == None:
-        return (False, ".tran XXX XXX sweep monte=XXX didn't found")
+        return (False, ".tran XXX XXX sweep monte=XXX didn't found", None)
     monte_runs = int(monte[2])
+    generated_files = []
     for i in range(monte_runs):
         new_lines = parse_spice(lines, i, distribution_map)
-        utils.write_to_file(spice_file, i, path, new_lines)
+        generated_files.append(utils.write_to_file(spice_file, i, path, new_lines))
 
-    return (True, "")
+    return (True, "", generated_files)
     
 def main():
     args = handle_args() 
@@ -112,6 +112,12 @@ def main():
     generated = generate_process_variation(arg_options[__SPICE_FILE], path)
     if generated[0] == False:
         print(generated[1])
+    else:
+        if generated[2] is None:
+            print("Unexpedted error happened")
+        else :
+            for path in generated[2]:
+                utils.run_hspice(path)
 
 
 if __name__ == "__main__":
