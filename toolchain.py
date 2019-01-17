@@ -11,8 +11,8 @@ __SCRIPT_FILE = "script_file"
 def handle_args():
     args = sys.argv
     print(args)
-    message = "The correct way to this program is: python3 toolchain.py -i yourspicefile.sp -s yourscripts.py "
-    if len(args) < 5:
+    message = "The correct way to run this program is: python3 toolchain.py -i yourspicefile.sp -s yourscripts.py "
+    if len(args) < 3:
         return (False, message)
 
     cont = True 
@@ -25,11 +25,8 @@ def handle_args():
         if args[i] == '-i':
             arg_dict[__SPICE_FILE] = args[i+1]
             cont == True
-        elif args[i] == "-s":
-            arg_dict[__SCRIPT_FILE] = args[i+1].split('.')[0] #remove .py
-            cont = True
 
-    if __SPICE_FILE not in arg_dict or __SCRIPT_FILE not in arg_dict:
+    if __SPICE_FILE not in arg_dict: 
         return (False, message)
 
     return (True, arg_dict)
@@ -88,6 +85,7 @@ def generate_process_variation(spice_file, path):
     result = initial_spice_parse(spice_file)
     lines = result[0]
     distribution_map = result[1]
+    print(distribution_map)
     if distribution_map == {}:
         return (False, "Distribution not found", None)
     monte = result[2]
