@@ -31,6 +31,10 @@ def handle_args():
 
     return (True, arg_dict)
 
+# Parses hspice file and prepare it
+# 1) Fixes the include line to get file (Note: in current version the library should be beside the spice file)
+# 2) Removes GAUSSIAN Distribution (TODO: Add more distributions)
+# 3) Removes "sweep monte=XX" from .tran 10p 40n sweep monte=10
 def initial_spice_parse(file_name):
     distribution_map = {}
     f = open(file_name)
@@ -49,11 +53,13 @@ def initial_spice_parse(file_name):
             distribution_map[gaussian[0]] = gaussian[1:]
         elif monte:
             monte_data = monte
+            file_line_by_line_with_no_monte.append(monte_data[0])
         else:
             file_line_by_line_with_no_monte.append(line)
 
     return (file_line_by_line_with_no_monte, distribution_map, monte_data)
 
+# Calculates the Width and Length from given distribution
 def calculate_distribution(line, index, distribution_map):
     # Fix this and calculate the variables based on distribution_map
     new_line = ""
@@ -70,7 +76,8 @@ def calculate_distribution(line, index, distribution_map):
     line[7] = ''        
     new_line = ''.join(line)
     return new_line
-        
+
+#Parses the spice 
 def parse_spice(file_lines, index, distribution_map):
     new_file_lines = []
     for line in file_lines:
@@ -91,7 +98,7 @@ def generate_process_variation(spice_file, path):
     monte = result[2]
     if monte == None:
         return (False, ".tran XXX XXX sweep monte=XXX didn't found", None)
-    monte_runs = int(monte[2])
+    monte_runs = int(monte[1])
     generated_files = []
     for i in range(monte_runs):
         new_lines = parse_spice(lines, i, distribution_map)

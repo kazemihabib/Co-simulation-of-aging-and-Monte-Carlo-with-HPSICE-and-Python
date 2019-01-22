@@ -17,7 +17,7 @@ def parse_guassian_distribution(line):
     return base_parser(regex, line)
 
 def parse_monte(line):
-    regex = r".tran\s+({size})\s+({size})\s+sweep\s+monte\s*=\s*(\d+)".format(size=__SIZE_REG)
+    regex = r"(.tran\s+{size}\s+{size})\s+sweep\s+monte\s*=\s*(\d+)".format(size=__SIZE_REG)
     return base_parser(regex, line)
 
 def parse_sizing_monte(line):
