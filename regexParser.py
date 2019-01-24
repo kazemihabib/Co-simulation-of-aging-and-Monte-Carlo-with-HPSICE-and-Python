@@ -32,6 +32,10 @@ def parse_include(line):
     regex = r"(.include\s*)(')([\w.]*')"
     return base_parser(regex, line)
 
+def parse_aging_part(content):
+    regex = r"([\s\S]*\*<---BeginAging--->)([\s\S]*)?(\*<---EndAging--->[\s\S]*)"
+    return base_parser(regex, content)
+
 if __name__ == "__main__":
     test_str = ".param myVariable_23 = GAUSS (1 , 0.20 , 1)"
     g_dist = parse_guassian_distribution(test_str)

@@ -47,7 +47,9 @@ c2  in 0 2ff   // in khazan haro gozashtim chon nemodar kheili smooth tar mishe 
 
 .measure tran AvgPower Avg Power from = 10ps to = 40ns
 
-.mosra reltotaltime='6*365*24*60*60' 
+*<---BeginAging--->
+
+.mosra reltotaltime='7*365*24*60*60' 
 *bala yani vaghti aging hesab mikonim ta 6 saal hesab kon 
 +relstep=6.3e+7
 *alan dafaat hesab kardan hast masalan mige 6.3e+7 bar chek kon ta be 6sal beresi
@@ -68,6 +70,7 @@ c2  in 0 2ff   // in khazan haro gozashtim chon nemodar kheili smooth tar mishe 
  .option appendall
  .option mosrasort=delvth0
 
+*<---EndAging--->
 .END
 * AZ subckt barayeh moshakhas kardan madule v seda zadan estefadeh mishe k kheili baad hast v man natonestam bahash kar konam.
 *.subsckt not in out
