@@ -2,6 +2,7 @@ import sys
 import random
 import regexParser
 import utils
+import numpy as np
 
 distribution_map = {}
 
@@ -64,18 +65,27 @@ def initial_spice_parse(file_name):
 
     return (file_line_by_line_with_no_monte, distribution_map, tran_sweep_data, aging_part)
 
+def calculate_random(variable, distribution_map):
+    (distribution, m, z, x) = distribution_map[variable] 
+    sigma = float(m) * float(z) / float(x)
+    if str(distribution).upper() == "GAUSS":
+        rand = np.random.normal(float(m), float(sigma), 1)
+        return rand[0]
+    return 1 
+
 # Calculates the Width and Length from given distribution
 def calculate_distribution(line, index, distribution_map):
     # Fix this and calculate the variables based on distribution_map
+    print(line)
     new_line = ""
     size = regexParser.parse_tran_size(line[2])
-    size[0] = str(int(size[0]) + random.uniform(0, 1))
+    size[0] = str(int(size[0]) * calculate_random(line[3], distribution_map))
     line[2] = ''.join(size)
 
     line[3] = ''
 
     size = regexParser.parse_tran_size(line[6])
-    size[0] = str(int(size[0]) + random.uniform(0, 1))
+    size[0] = str(int(size[0]) * calculate_random(line[7], distribution_map))
     line[6] = ''.join(size)
 
     line[7] = ''        
@@ -92,12 +102,6 @@ def parse_spice(file_lines, index, distribution_map):
 
         new_file_lines.append(line)
     return new_file_lines 
-
-def generate_step1(monte_runs, lines, ):
-    pass
-
-def generate_step2():
-    pass
 
 def generate_process_variation(initialised_data, step1_path, step2_path, name, aging_part):
     # result = initial_spice_parse(spice_file)
