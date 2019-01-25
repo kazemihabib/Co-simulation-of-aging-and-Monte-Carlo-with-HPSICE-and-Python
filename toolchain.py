@@ -4,6 +4,7 @@ import regexParser
 import utils
 import numpy as np
 import os
+import math
 
 distribution_map = {}
 
@@ -12,7 +13,7 @@ __SCRIPT_FILE = "script_file"
 
 def handle_args():
     args = sys.argv
-    print(args)
+    # print(args)
     message = "The correct way to run this program is: python3 toolchain.py -i yourspicefile.sp -s yourscripts.py "
     if len(args) < 3:
         return (False, message)
@@ -49,10 +50,12 @@ def initial_spice_parse(file_name):
 
     file_line_by_line_with_no_monte = []
     tran_sweep_data = None
+    measure_variables = []
     for line in file_data_line_by_line:
         gaussian = regexParser.parse_guassian_distribution(line)
         tran_sweep = regexParser.parse_monte(line)
         include = regexParser.parse_include(line)
+        measure_variable = regexParser.parse_measure(line)
 
         if include:
             line = include[0] + include[1] + "../../../" + include[2] 
@@ -61,10 +64,12 @@ def initial_spice_parse(file_name):
         elif tran_sweep:
             tran_sweep_data = tran_sweep 
             file_line_by_line_with_no_monte.append(tran_sweep_data[0])
+        elif measure_variable:
+            measure_variables.append(measure_variable[0])
         else:
             file_line_by_line_with_no_monte.append(line)
-
-    return (file_line_by_line_with_no_monte, distribution_map, tran_sweep_data, aging_part)
+    f.close()
+    return (file_line_by_line_with_no_monte, distribution_map, tran_sweep_data, aging_part, measure_variables)
 
 def calculate_random(variable, distribution_map):
     (distribution, m, z, x) = distribution_map[variable] 
@@ -107,7 +112,7 @@ def generate_process_variation(initialised_data, step1_path, step2_path, name, a
     # result = initial_spice_parse(spice_file)
     lines = initialised_data[0]
     distribution_map = initialised_data[1]
-    print(distribution_map)
+    # print(distribution_map)
     if distribution_map == {}:
         return (False, "Distribution not found", None)
     tran_sweep_data = initialised_data[2]
@@ -124,7 +129,81 @@ def generate_process_variation(initialised_data, step1_path, step2_path, name, a
         step2_generated_in_directory.append(utils.write_to_file(name, i, step2_path, step2_lines))
     
     return (True, "", step1_generated_in_directory, step2_generated_in_directory)
-    
+
+def run_hspice(directories_of_step1, directories_of_step2, file_name):
+    for directory in directories_of_step1:
+        file_path = os.path.join(directory, file_name) 
+        utils.run_hspice(file_path)
+
+    for directory in directories_of_step2:
+        file_path = os.path.join(directory, file_name) 
+        utils.run_hspice(file_path)
+
+def calculate_mean(data):
+    return sum(data) / len(data)
+
+def calculate_sigma(data):
+    mean = calculate_mean(data)
+    return math.sqrt( sum([(item - mean) **2 for item in data]) / len(data))
+
+def calculate_delays(directories_of_step1, directories_of_step2, measure_variables, file_name):
+    step1_dic = {}
+    step2_dic = {}
+
+    for directory in directories_of_step1:
+        file_path = os.path.join(directory, file_name) 
+        f = open(file_path)
+        file_lines = f.read().split('\n')
+        for line in file_lines:
+            delays = regexParser.parse_lis_delay(measure_variables, line)
+            if delays:
+                if delays[0] in step1_dic:
+                    step1_dic[delays[0]].append(float(delays[1]))
+                else:
+                    step1_dic[delays[0]] = [float(delays[1])]
+
+        f.close()
+    print("\nSTEP1:\n")
+    for item in step1_dic:
+        data = step1_dic[item]
+        print("{name}:\tmean: {mean}\tsigma: {sigma}".format(name=item, mean=calculate_mean(data), sigma=calculate_sigma(data)))
+
+    print('\n\n')
+
+    for directory in directories_of_step2:
+        file_path = os.path.join(directory, file_name) 
+        f = open(file_path)
+        # utils.run_hspice(file_path)
+        file_lines = f.read().split('\n')
+
+        array_index = {}
+        for i in measure_variables:
+            array_index[i] = 0
+
+        for line in file_lines:
+            delays = regexParser.parse_lis_delay(measure_variables, line)
+            if delays:
+                var_name = delays[0]
+                if var_name in step2_dic:
+                    if len(step2_dic[var_name]) > array_index[var_name]:
+                        step2_dic[var_name][array_index[var_name]].append(float(delays[1]))
+                    else:
+                        step2_dic[var_name].append([float(delays[1])])
+                else:
+                    step2_dic[var_name] = [[float(delays[1])]]
+
+                array_index[var_name] += 1
+        f.close()
+
+    print("\n\nSTEP2:\n")
+    for key in step2_dic:
+        for array in step2_dic[key]:
+            print("{name}:\tmean: {mean}\tsigma: {sigma}\n".format(name=key, mean=calculate_mean(array), sigma=calculate_sigma(array)))
+
+        print("\n")
+
+    print('\n\n')
+
 def main():
     args = handle_args() 
     if args[0] == False:
@@ -136,19 +215,19 @@ def main():
     print(step1_path)
     initialised_data = initial_spice_parse(arg_options[__SPICE_FILE])
     generated = generate_process_variation(initialised_data, step1_path, step2_path, arg_options[__SPICE_FILE], initialised_data[3])
+    measure_variables = initialised_data[4]
+
     if generated[0] == False:
         print(generated[1])
     else:
         if generated[2] == [] or generated[3] == []:
             print("Unexpedted error happened")
         else :
-            for directory in generated[2]:
-                file_path = os.path.join(directory, arg_options[__SPICE_FILE]) 
-                utils.run_hspice(file_path)
-
-            for path in generated[3]:
-                file_path = os.path.join(directory, arg_options[__SPICE_FILE]) 
-                utils.run_hspice(file_path)
+            # run_hspice(generated[2], generated[3], arg_options[__SPICE_FILE])
+            lis_file = arg_options[__SPICE_FILE].split('.')
+            lis_file[1] = "lis"
+            lis_file_name = '.'.join(lis_file)
+            calculate_delays(generated[2], generated[3], measure_variables, lis_file_name)
 
 
 if __name__ == "__main__":
