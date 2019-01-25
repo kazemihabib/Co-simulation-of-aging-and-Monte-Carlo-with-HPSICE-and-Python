@@ -20,7 +20,7 @@ def write_to_file(filename, file_index, path, data_list):
     f = open(file_path, 'w')
     f.writelines('\n'.join(data_list))
 
-    return file_path
+    return directory 
 
 def run_hspice(file_path):
     test = subprocess.Popen(["hspice", '-i', file_path, '-o', '/'.join(file_path.split('/')[:-1]), '-mt', '8'], stdout=subprocess.PIPE)

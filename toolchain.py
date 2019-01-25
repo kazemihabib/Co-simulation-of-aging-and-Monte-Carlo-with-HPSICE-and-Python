@@ -3,6 +3,7 @@ import random
 import regexParser
 import utils
 import numpy as np
+import os
 
 distribution_map = {}
 
@@ -76,7 +77,6 @@ def calculate_random(variable, distribution_map):
 # Calculates the Width and Length from given distribution
 def calculate_distribution(line, index, distribution_map):
     # Fix this and calculate the variables based on distribution_map
-    print(line)
     new_line = ""
     size = regexParser.parse_tran_size(line[2])
     size[0] = str(int(size[0]) * calculate_random(line[3], distribution_map))
@@ -114,16 +114,16 @@ def generate_process_variation(initialised_data, step1_path, step2_path, name, a
     if tran_sweep_data == None:
         return (False, ".tran XXX XXX sweep monte=XXX didn't found", None)
     monte_runs = int(tran_sweep_data[1])
-    step1_generated_files = []
-    step2_generated_files = []
+    step1_generated_in_directory = []
+    step2_generated_in_directory = []
     for i in range(monte_runs):
         step1_lines = parse_spice(lines, i, distribution_map)
         step2_lines = utils.add_aging_part(step1_lines, aging_part).split('\n') 
 
-        step1_generated_files.append(utils.write_to_file(name, i, step1_path, step1_lines))
-        step2_generated_files.append(utils.write_to_file(name, i, step2_path, step2_lines))
+        step1_generated_in_directory.append(utils.write_to_file(name, i, step1_path, step1_lines))
+        step2_generated_in_directory.append(utils.write_to_file(name, i, step2_path, step2_lines))
     
-    return (True, "", step1_generated_files, step2_generated_files)
+    return (True, "", step1_generated_in_directory, step2_generated_in_directory)
     
 def main():
     args = handle_args() 
@@ -142,11 +142,13 @@ def main():
         if generated[2] == [] or generated[3] == []:
             print("Unexpedted error happened")
         else :
-            for path in generated[2]:
-                utils.run_hspice(path)
+            for directory in generated[2]:
+                file_path = os.path.join(directory, arg_options[__SPICE_FILE]) 
+                utils.run_hspice(file_path)
 
             for path in generated[3]:
-                utils.run_hspice(path)
+                file_path = os.path.join(directory, arg_options[__SPICE_FILE]) 
+                utils.run_hspice(file_path)
 
 
 if __name__ == "__main__":
