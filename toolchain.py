@@ -66,6 +66,7 @@ def initial_spice_parse(file_name):
             file_line_by_line_with_no_monte.append(tran_sweep_data[0])
         elif measure_variable:
             measure_variables.append(measure_variable[0])
+            file_line_by_line_with_no_monte.append(line)
         else:
             file_line_by_line_with_no_monte.append(line)
     f.close()
@@ -163,6 +164,7 @@ def calculate_delays(directories_of_step1, directories_of_step2, measure_variabl
                     step1_dic[delays[0]] = [float(delays[1])]
 
         f.close()
+
     print("\nSTEP1:\n")
     for item in step1_dic:
         data = step1_dic[item]
@@ -223,7 +225,7 @@ def main():
         if generated[2] == [] or generated[3] == []:
             print("Unexpedted error happened")
         else :
-            # run_hspice(generated[2], generated[3], arg_options[__SPICE_FILE])
+            run_hspice(generated[2], generated[3], arg_options[__SPICE_FILE])
             lis_file = arg_options[__SPICE_FILE].split('.')
             lis_file[1] = "lis"
             lis_file_name = '.'.join(lis_file)
