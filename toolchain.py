@@ -209,7 +209,6 @@ def main():
     arg_options = args[1]
     step1_path = utils.get_path_to_generate_step_data(arg_options[__SPICE_FILE], 1)
     step2_path = utils.get_path_to_generate_step_data(arg_options[__SPICE_FILE], 2)
-    # print(step1_path)
     initialised_data = initial_spice_parse(arg_options[__SPICE_FILE])
     generated = generate_process_variation(initialised_data, step1_path, step2_path, arg_options[__SPICE_FILE], initialised_data[3])
     measure_variables = [item.lower() for item in initialised_data[4]]
