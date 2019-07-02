@@ -3,11 +3,15 @@ import subprocess
 import regexParser
 import csv
 import io
+import shutil
 
 def get_path_to_generate_step_data(input_file, step):
     path = os.path.dirname(input_file)        
     step_path = os.path.join(path, "toolchain")
     return os.path.abspath(os.path.join(step_path, "step" + str(step)))
+
+def remove_dir_recursive(dir):
+    shutil.rmtree(dir) 
 
 def create_directory(dir, path):
     directory = os.path.join(path, dir)
