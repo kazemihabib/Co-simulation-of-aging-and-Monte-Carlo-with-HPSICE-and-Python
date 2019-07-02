@@ -26,12 +26,8 @@ def write_to_file(filename, file_index, path, data_list):
 
 def run_hspice(file_path):
     command = ["hspice", '-i', file_path, '-o', '/'.join(file_path.split('/')[:-1]), '-mt', '8']
-    # test = subprocess.Popen(, stdout=subprocess.PIPE)
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    # out, error = test.communicate()
-    # print(out, error)
-    # print(result.returncode, result.stdout, result.stderr)
-    print(result.stderr)
+    # print(result.stderr)
     return regexParser.parse_jobs(result.stderr)
 
 def remove_aging_part(fileContent):

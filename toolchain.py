@@ -188,7 +188,7 @@ def calculate_delays_from_csv(directories, mt_file_name, measure_variables):
 
     for item in measure_variables:
         data = dic[item]
-        print("{name:<10} => mean: {mean:^30} sigma: {sigma:>30}".format(name=item, arrow="=>", mean=calculate_mean(data), sigma=calculate_sigma(data)))
+        print("{name:<10} => mean: {mean:<30} sigma: {sigma:<30}".format(name=item, arrow="=>", mean=calculate_mean(data), sigma=calculate_sigma(data)))
 
 def calculate_delays(directories_of_step1, directories_of_step2, measure_variables, mt_file_name_step_1, mt_file_name_step_2):
     print("\nSTEP1:")
