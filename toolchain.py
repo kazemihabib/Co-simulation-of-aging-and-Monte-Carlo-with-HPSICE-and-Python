@@ -10,6 +10,7 @@ distribution_map = {}
 
 __SPICE_FILE = "spice_file"
 __SCRIPT_FILE = "script_file"
+monte_runs = 0
 
 def handle_args():
     args = sys.argv
@@ -110,6 +111,7 @@ def parse_spice(file_lines, index, distribution_map):
     return new_file_lines 
 
 def generate_process_variation(initialised_data, step1_path, step2_path, name, aging_part):
+    global monte_runs
     # result = initial_spice_parse(spice_file)
     lines = initialised_data[0]
     distribution_map = initialised_data[1]
@@ -132,13 +134,28 @@ def generate_process_variation(initialised_data, step1_path, step2_path, name, a
     return (True, "", step1_generated_in_directory, step2_generated_in_directory)
 
 def run_hspice(directories_of_step1, directories_of_step2, file_name):
+    print("Step1 runs:")
+    step_1_aborts = 0
+    step_2_aborts = 0
+    res = True
     for directory in directories_of_step1:
         file_path = os.path.join(directory, file_name) 
-        utils.run_hspice(file_path)
+        res = utils.run_hspice(file_path)
+        if not res:
+            step_1_aborts+=1
 
+    print("\n\nStep2 runs:")
     for directory in directories_of_step2:
         file_path = os.path.join(directory, file_name) 
-        utils.run_hspice(file_path)
+        res = utils.run_hspice(file_path)
+        if not res:
+            step_2_aborts+=1
+
+    
+    print("Step1: number of aborted:{aborted} of {all} ".format(aborted=step_1_aborts, all=monte_runs))
+    print("Step2: number of aborted:{aborted} of {all} ".format(aborted=step_2_aborts, all=monte_runs))
+
+
 
 def calculate_mean(data):
     return sum(data) / len(data)
@@ -214,7 +231,7 @@ def main():
     arg_options = args[1]
     step1_path = utils.get_path_to_generate_step_data(arg_options[__SPICE_FILE], 1)
     step2_path = utils.get_path_to_generate_step_data(arg_options[__SPICE_FILE], 2)
-    print(step1_path)
+    # print(step1_path)
     initialised_data = initial_spice_parse(arg_options[__SPICE_FILE])
     generated = generate_process_variation(initialised_data, step1_path, step2_path, arg_options[__SPICE_FILE], initialised_data[3])
     measure_variables = initialised_data[4]

@@ -45,6 +45,15 @@ def parse_lis_delay(variable_names, line):
     regex = r"({vars})\s*=\s*(\d+.\d+|\d+)([p|n])".format(vars=variables)
     return base_parser(regex, line)
 
+def parse_jobs(line):
+    regex = r"(aborted)"
+    # return false on abort
+    # return true on conclude
+    if len(base_parser(regex, line)):
+        return False
+    else:
+        return True 
+
 if __name__ == "__main__":
     test_str = ".param myVariable_23 = GAUSS (1 , 0.20 , 1)"
     g_dist = parse_guassian_distribution(test_str)
@@ -73,3 +82,17 @@ if __name__ == "__main__":
     test_str = "tlh=  29.7972p  targ=   1.0323n   trig=   1.0025n"
     delay = parse_lis_delay(['tlh', 'thl', 'tpd'], test_str)
     print(delay)
+
+    test_str = "hspice job aborted"
+    job = parse_jobs(test_str)
+    if job:
+        print("job concluded")
+    else:
+        print("job aborted")
+
+    test_str = "hspice job concluded"
+    job = parse_jobs(test_str)
+    if job:
+        print("job concluded")
+    else:
+        print("job aborted")
