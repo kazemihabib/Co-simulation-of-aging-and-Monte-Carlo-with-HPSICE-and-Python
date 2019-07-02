@@ -1,6 +1,8 @@
 import sys, os
 import subprocess
 import regexParser
+import csv
+import io
 
 def get_path_to_generate_step_data(input_file, step):
     path = os.path.dirname(input_file)        
@@ -40,3 +42,16 @@ def add_aging_part(file_lines, aging_part):
     (first, second, third) = regexParser.parse_aging_part('\n'.join(file_lines))
     return first + '\n' + aging_part + '\n' + third
 
+def read_csv(file_path):
+    with open(file_path, mode='r') as csv_file:
+        lines = csv_file.readlines()
+        # just keep the columns names and last line
+        str_lines = '\n'.join([lines[3], lines[-1]])
+        csv_reader = csv.DictReader(io.StringIO(str_lines))
+
+        for row in csv_reader:
+            return row
+
+        # print(variables_dict)
+        # print(my_dict)
+        # print(f'Processed {line_count} lines.')

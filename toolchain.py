@@ -14,7 +14,6 @@ monte_runs = 0
 
 def handle_args():
     args = sys.argv
-    # print(args)
     message = "The correct way to run this program is: python3 toolchain.py -i yourspicefile.sp -s yourscripts.py "
     if len(args) < 3:
         return (False, message)
@@ -112,10 +111,8 @@ def parse_spice(file_lines, index, distribution_map):
 
 def generate_process_variation(initialised_data, step1_path, step2_path, name, aging_part):
     global monte_runs
-    # result = initial_spice_parse(spice_file)
     lines = initialised_data[0]
     distribution_map = initialised_data[1]
-    # print(distribution_map)
     if distribution_map == {}:
         return (False, "Distribution not found", None)
     tran_sweep_data = initialised_data[2]
@@ -135,6 +132,7 @@ def generate_process_variation(initialised_data, step1_path, step2_path, name, a
 
 def run_hspice(directories_of_step1, directories_of_step2, file_name):
     print("Step1 runs:")
+    print("**************************************************************************************")
     step_1_aborts = 0
     step_2_aborts = 0
     res = True
@@ -144,7 +142,10 @@ def run_hspice(directories_of_step1, directories_of_step2, file_name):
         if not res:
             step_1_aborts+=1
 
+    print("**************************************************************************************")
+
     print("\n\nStep2 runs:")
+    print("**************************************************************************************")
     for directory in directories_of_step2:
         file_path = os.path.join(directory, file_name) 
         res = utils.run_hspice(file_path)
@@ -152,8 +153,9 @@ def run_hspice(directories_of_step1, directories_of_step2, file_name):
             step_2_aborts+=1
 
     
-    print("Step1: number of aborted:{aborted} of {all} ".format(aborted=step_1_aborts, all=monte_runs))
-    print("Step2: number of aborted:{aborted} of {all} ".format(aborted=step_2_aborts, all=monte_runs))
+    print("**************************************************************************************")
+    print("Step1 =>\t {aborted} of {all} aborted".format(aborted=step_1_aborts, all=monte_runs))
+    print("Step2 =>\t {aborted} of {all} aborted".format(aborted=step_2_aborts, all=monte_runs))
 
 
 
@@ -164,64 +166,40 @@ def calculate_sigma(data):
     mean = calculate_mean(data)
     return math.sqrt( sum([(item - mean) **2 for item in data]) / len(data))
 
-def calculate_delays(directories_of_step1, directories_of_step2, measure_variables, file_name):
-    step1_dic = {}
-    step2_dic = {}
+def calculate_delays_from_csv(directories, mt_file_name, measure_variables):
+    dic = {}
+    for directory in directories:
+        file_path = os.path.join(directory, mt_file_name )
+        row = utils.read_csv(file_path)
 
-    for directory in directories_of_step1:
-        file_path = os.path.join(directory, file_name) 
-        f = open(file_path)
-        file_lines = f.read().split('\n')
-        for line in file_lines:
-            delays = regexParser.parse_lis_delay(measure_variables, line)
-            if delays:
-                if delays[0] in step1_dic:
-                    step1_dic[delays[0]].append(float(delays[1]))
+        for column in measure_variables:
+            try:
+                if column in dic:
+                    dic[column].append(float(row[column]))
                 else:
-                    step1_dic[delays[0]] = [float(delays[1])]
+                    dic[column] = [float(row[column])]
+            except:
+                pass #Something failed
 
-        f.close()
+    # print("Debug:")
+    # print("################################################################\n")
+    # print(dic)
+    # print("################################################################\n")
 
-    print("\nSTEP1:\n")
-    for item in step1_dic:
-        data = step1_dic[item]
-        print("{name}:\tmean: {mean}\tsigma: {sigma}".format(name=item, mean=calculate_mean(data), sigma=calculate_sigma(data)))
+    for item in measure_variables:
+        data = dic[item]
+        print("{name} =>\tmean: {mean}\tsigma: {sigma}".format(name=item, mean=calculate_mean(data), sigma=calculate_sigma(data)))
 
-    print('\n\n')
+def calculate_delays(directories_of_step1, directories_of_step2, measure_variables, mt_file_name_step_1, mt_file_name_step_2):
+    print("\nSTEP1:")
+    print("**************************************************************************************")
+    calculate_delays_from_csv(directories_of_step1, mt_file_name_step_1, measure_variables)
+    print("**************************************************************************************")
 
-    for directory in directories_of_step2:
-        file_path = os.path.join(directory, file_name) 
-        f = open(file_path)
-        # utils.run_hspice(file_path)
-        file_lines = f.read().split('\n')
-
-        array_index = {}
-        for i in measure_variables:
-            array_index[i] = 0
-
-        for line in file_lines:
-            delays = regexParser.parse_lis_delay(measure_variables, line)
-            if delays:
-                var_name = delays[0]
-                if var_name in step2_dic:
-                    if len(step2_dic[var_name]) > array_index[var_name]:
-                        step2_dic[var_name][array_index[var_name]].append(float(delays[1]))
-                    else:
-                        step2_dic[var_name].append([float(delays[1])])
-                else:
-                    step2_dic[var_name] = [[float(delays[1])]]
-
-                array_index[var_name] += 1
-        f.close()
-
-    print("\n\nSTEP2:\n")
-    for key in step2_dic:
-        for array in step2_dic[key]:
-            print("{name}:\tmean: {mean}\tsigma: {sigma}\n".format(name=key, mean=calculate_mean(array), sigma=calculate_sigma(array)))
-
-        print("\n")
-
-    print('\n\n')
+    print("\nSTEP2:")
+    print("**************************************************************************************")
+    calculate_delays_from_csv(directories_of_step2, mt_file_name_step_2, measure_variables)
+    print("**************************************************************************************")
 
 def main():
     args = handle_args() 
@@ -234,7 +212,7 @@ def main():
     # print(step1_path)
     initialised_data = initial_spice_parse(arg_options[__SPICE_FILE])
     generated = generate_process_variation(initialised_data, step1_path, step2_path, arg_options[__SPICE_FILE], initialised_data[3])
-    measure_variables = initialised_data[4]
+    measure_variables = [item.lower() for item in initialised_data[4]]
 
     if generated[0] == False:
         print(generated[1])
@@ -243,10 +221,11 @@ def main():
             print("Unexpedted error happened")
         else :
             run_hspice(generated[2], generated[3], arg_options[__SPICE_FILE])
-            lis_file = arg_options[__SPICE_FILE].split('.')
-            lis_file[1] = "lis"
-            lis_file_name = '.'.join(lis_file)
-            calculate_delays(generated[2], generated[3], measure_variables, lis_file_name)
+            mt_file = arg_options[__SPICE_FILE].split('.')
+            mt_file_name_step_1 = mt_file[0] + '.mt0.csv'
+            mt_file_name_step_2 = mt_file[0] + '.mt0@ra.csv'
+
+            calculate_delays(generated[2], generated[3], measure_variables, mt_file_name_step_1, mt_file_name_step_2)
 
 
 if __name__ == "__main__":
