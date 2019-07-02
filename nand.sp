@@ -6,8 +6,8 @@
 ** Sources ***********
 VD VDD 0 DC 0.9V
 .param vdd=0.9
-.param c=GAUSS(1,0.2,1)
-.param d=GAUSS(1,0.2,1)
+.param c=GAUSS(1,0.2,3)
+.param d=GAUSS(1,0.2,3)
 * .global vdd
 *VIN IN 0 DC 0v
 .option measform=3
@@ -42,14 +42,14 @@ c2  in 0 2ff   // in khazan haro gozashtim chon nemodar kheili smooth tar mishe 
 .measure tran  thl trig v(in1) val = 'vdd/2' fall = 1 targ v(out) val = 'vdd/2' rise =1
 .measure tran tpd param='(tlh+thl/2)'
 .option post
-.tran 10p 40n sweep monte=10
+.tran 10p 40n sweep monte=1000
 .temp 70
 
 .measure tran AvgPower Avg Power from = 10ps to = 40ns
 
 *<---BeginAging--->
 
-.mosra reltotaltime='7*365*24*60*60' 
+.mosra reltotaltime='10*365*24*60*60' 
 *bala yani vaghti aging hesab mikonim ta 6 saal hesab kon 
 +relstep=6.3e+7
 *alan dafaat hesab kardan hast masalan mige 6.3e+7 bar chek kon ta be 6sal beresi
