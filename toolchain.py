@@ -218,7 +218,7 @@ def main():
         print(generated[1])
     else:
         if generated[2] == [] or generated[3] == []:
-            print("Unexpedted error happened")
+            print("Unexpecdted error happened")
         else :
             run_hspice(generated[2], generated[3], arg_options[__SPICE_FILE])
             mt_file = arg_options[__SPICE_FILE].split('.')
