@@ -9,12 +9,11 @@ import math
 distribution_map = {}
 
 __SPICE_FILE = "spice_file"
-__SCRIPT_FILE = "script_file"
 monte_runs = 0
 
 def handle_args():
     args = sys.argv
-    message = "The correct way to run this program is: python3 toolchain.py -i yourspicefile.sp -s yourscripts.py "
+    message = "The correct way to run this program is: python3 toolchain.py -i yourspicefile.sp"
     if len(args) < 3:
         return (False, message)
 
