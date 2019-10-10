@@ -11,7 +11,8 @@ def get_path_to_generate_step_data(input_file, step):
     return os.path.abspath(os.path.join(step_path, "step" + str(step)))
 
 def remove_dir_recursive(dir):
-    shutil.rmtree(dir) 
+    if os.path.exists(dir):
+        shutil.rmtree(dir) 
 
 def create_directory(dir, path):
     directory = os.path.join(path, dir)
