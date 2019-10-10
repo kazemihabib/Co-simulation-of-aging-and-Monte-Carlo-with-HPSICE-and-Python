@@ -6,8 +6,8 @@
 ** Sources ***********
 VD VDD 0 DC 0.9V
 .param vdd=0.9
-.param c=GAUSS(1,0.2,3)
-.param d=GAUSS(1,0.2,3)
+.param c=GAUSS(1,0.2,2.1)
+.param d=GAUSS(1,0.2,2.1)
 * .global vdd
 *VIN IN 0 DC 0v
 .option measform=3
@@ -42,7 +42,7 @@ c2  in 0 2ff   // in khazan haro gozashtim chon nemodar kheili smooth tar mishe 
 .measure tran  thl trig v(in1) val = 'vdd/2' fall = 1 targ v(out) val = 'vdd/2' rise =1
 .measure tran tpd param='(tlh+thl/2)'
 .option post
-.tran 10p 40n sweep monte=1000
+.tran 10p 40n sweep monte=10
 .temp 70
 
 .measure tran AvgPower Avg Power from = 10ps to = 40ns

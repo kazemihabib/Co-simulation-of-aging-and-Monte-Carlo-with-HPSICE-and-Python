@@ -181,10 +181,10 @@ def calculate_delays_from_csv(directories, mt_file_name, measure_variables):
             except:
                 pass #Something failed
 
-    # print("Debug:")
-    # print("################################################################\n")
-    # print(dic)
-    # print("################################################################\n")
+    #print("Debug:")
+    #print("################################################################\n")
+    #print(dic)
+    #print("################################################################\n")
 
     for item in measure_variables:
         data = dic[item]
