@@ -5,6 +5,7 @@ import utils
 import numpy as np
 import os
 import math
+from pathlib import Path
 
 distribution_map = {}
 
@@ -221,7 +222,7 @@ def main():
     utils.remove_dir_recursive(step2_path) 
 
     initialised_data = initial_spice_parse(arg_options[__SPICE_FILE])
-    generated = generate_process_variation(initialised_data, step1_path, step2_path, arg_options[__SPICE_FILE], initialised_data[3])
+    generated = generate_process_variation(initialised_data, step1_path, step2_path, Path(arg_options[__SPICE_FILE]).name, initialised_data[3])
     measure_variables = [item.lower() for item in initialised_data[4]]
 
     if generated[0] == False:
@@ -230,13 +231,14 @@ def main():
         if generated[2] == [] or generated[3] == []:
             print("Unexpecdted error happened")
         else :
-            run_hspice(generated[2], generated[3], arg_options[__SPICE_FILE])
-            mt_file = arg_options[__SPICE_FILE].split('.')
-            mt_file_name_step_1 = mt_file[0] + '.mt0.csv'
-            mt_file_name_step_2 = mt_file[0] + '.mt0@ra.csv'
-
+            run_hspice(generated[2], generated[3], Path(arg_options[__SPICE_FILE]).name)
+            file_stem = Path(arg_options[__SPICE_FILE]).stem
+            # print(arg_options)
+            # print(mt_file)
+            mt_file_name_step_1 = file_stem + '.mt0.csv'
+            mt_file_name_step_2 = file_stem + '.mt0@ra.csv'
+            
             calculate_delays(generated[2], generated[3], measure_variables, mt_file_name_step_1, mt_file_name_step_2)
-
 
 if __name__ == "__main__":
     main()

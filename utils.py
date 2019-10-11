@@ -4,6 +4,7 @@ import regexParser
 import csv
 import io
 import shutil
+from pathlib import Path
 
 def get_path_to_generate_step_data(input_file, step):
     path = os.path.dirname(input_file)        
@@ -30,12 +31,13 @@ def write_to_file(filename, file_index, path, data_list):
     return directory 
 
 def run_hspice(file_path):
-    output_directory = os.sep.join(file_path.split(os.sep)[:-1])
-    file_name = file_path.split(os.sep)[-1]
-    resutl_file_name = file_name.split('.')[0]+".st0"
+    output_directory = str(Path(file_path).parent)
+    file_name = Path(file_path).stem
+    resutl_file_name = file_name + ".st0"
     result_file_path = os.path.join(output_directory, resutl_file_name)
 
-    command = ["hspice", '-i', file_path, '-o', output_directory, '-mt', '8']
+    command = ["hspice", '-i', file_path, '-o', os.path.join(output_directory, file_name), '-mt', '8']
+    # In windows we should set shell = True to check the path
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=os.name=="nt")
 
     with open(result_file_path) as result_file:
