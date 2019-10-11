@@ -30,10 +30,17 @@ def write_to_file(filename, file_index, path, data_list):
     return directory 
 
 def run_hspice(file_path):
-    command = ["hspice", '-i', file_path, '-o', '/'.join(file_path.split('/')[:-1]), '-mt', '8']
-    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    # print(result.stderr)
-    return regexParser.parse_jobs(result.stderr)
+    output_directory = os.sep.join(file_path.split(os.sep)[:-1])
+    file_name = file_path.split(os.sep)[-1]
+    resutl_file_name = file_name.split('.')[0]+".st0"
+    result_file_path = os.path.join(output_directory, resutl_file_name)
+
+    command = ["hspice", '-i', file_path, '-o', output_directory, '-mt', '8']
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, shell=os.name=="nt")
+
+    with open(result_file_path) as result_file:
+        result = result_file.read()
+        return regexParser.parse_jobs(result)
 
 def remove_aging_part(fileContent):
     (first, second, third) = regexParser.parse_aging_part(fileContent)
