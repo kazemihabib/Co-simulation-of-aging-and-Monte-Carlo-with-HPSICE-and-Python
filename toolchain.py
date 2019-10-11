@@ -169,7 +169,11 @@ def calculate_delays_from_csv(directories, mt_file_name, measure_variables):
     dic = {}
     for directory in directories:
         file_path = os.path.join(directory, mt_file_name )
-        row = utils.read_csv(file_path)
+        try:
+            # Aborted and no csv exist
+            row = utils.read_csv(file_path)
+        except:
+            pass
 
         for column in measure_variables:
             try:
@@ -186,8 +190,12 @@ def calculate_delays_from_csv(directories, mt_file_name, measure_variables):
     #print("################################################################\n")
 
     for item in measure_variables:
-        data = dic[item]
-        print("{name:<10} => mean: {mean:<30} sigma: {sigma:<30}".format(name=item, arrow="=>", mean=calculate_mean(data), sigma=calculate_sigma(data)))
+        try:
+            data = dic[item]
+            print("{name:<10} => mean: {mean:<30} sigma: {sigma:<30}".format(name=item, arrow="=>", mean=calculate_mean(data), sigma=calculate_sigma(data)))
+        except:
+            #key not found
+            pass
 
 def calculate_delays(directories_of_step1, directories_of_step2, measure_variables, mt_file_name_step_1, mt_file_name_step_2):
     print("\nSTEP1:")
