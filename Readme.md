@@ -46,3 +46,7 @@ Step2:
 ## How to Run
 
     python .\toolchain.py -i yourspicefilepath
+
+# License
+
+This project is available under the MIT license. See the LICENSE file for more info.
